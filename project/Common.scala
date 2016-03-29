@@ -9,7 +9,7 @@ object Common {
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.6", "2.11.7"),
     ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
-    organization := "ml.bundle",
+    organization := "demo",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
   )
 }

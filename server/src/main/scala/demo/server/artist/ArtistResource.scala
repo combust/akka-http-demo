@@ -16,10 +16,10 @@ case class ArtistResource(service: ArtistService) {
           complete(service.createArtist(CreateArtistRequest(artist)))
       }
     }
-  } ~ path("artists" / JavaUUID) {
-    uid =>
+  } ~ path("artists" / Segment) {
+    slug =>
       get {
-        complete(service.readArtist(ReadArtistRequest(uid)))
+        complete(service.readArtist(ReadArtistRequest(slug)))
       }
   }
 }

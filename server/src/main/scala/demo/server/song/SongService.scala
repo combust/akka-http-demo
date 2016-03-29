@@ -15,7 +15,7 @@ case class SongService(songDb: SongDatabase)
   }
 
   def readSongs(request: ReadSongsRequest): Future[ReadSongsResponse] = {
-    songDb.songsForArtist(request.artistUid)
+    songDb.songsForArtist(request.artistSlug)
       .map(ReadSongsResponse)
   }
 }

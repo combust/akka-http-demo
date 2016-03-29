@@ -11,6 +11,7 @@ object Dependencies {
     .union(Seq("io.spray" %% "spray-json" % "1.3.2"))
 
   lazy val clientDependencies = coreDependencies
+    .union(Seq("com.github.scopt" %% "scopt" % "3.4.0"))
 
   lazy val serverDependencies = coreDependencies
 }

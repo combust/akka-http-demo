@@ -19,8 +19,8 @@ trait CoreJsonSupport {
     }
   }
 
-  implicit val apiArtistFormat = jsonFormat3(Artist)
-  implicit val apiSongFormat = jsonFormat4(Song)
+  implicit val apiArtistFormat: RootJsonFormat[Artist] = jsonFormat3(Artist)
+  implicit val apiSongFormat: RootJsonFormat[Song] = jsonFormat4(Song)
 
   implicit val apiCreateArtistResponseFormat: RootJsonFormat[CreateArtistResponse] = jsonFormat1(CreateArtistResponse)
   implicit val apiReadArtistResponseFormat: RootJsonFormat[ReadArtistResponse] = jsonFormat1(ReadArtistResponse)

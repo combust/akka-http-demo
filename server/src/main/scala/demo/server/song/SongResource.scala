@@ -9,16 +9,16 @@ import demo.core.serialization.CoreJsonSupport._
   * Created by hollinwilkins on 3/29/16.
   */
 case class SongResource(service: SongService) {
-  val routes = path("artists" / JavaUUID / "songs") {
-    artistUid =>
+  val routes = path("artists" / Segment / "songs") {
+    artistSlug =>
       post {
         entity(as[Song]) {
           song =>
-            val song2 = song.copy(artistUid = Some(artistUid))
+            val song2 = song.copy(artistSlug = Some(artistSlug))
             complete(service.createSong(CreateSongRequest(song2)))
         }
       } ~ get {
-        complete(service.readSongs(ReadSongsRequest(artistUid)))
+        complete(service.readSongs(ReadSongsRequest(artistSlug)))
       }
   }
 }
