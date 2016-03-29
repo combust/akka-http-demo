@@ -4,7 +4,7 @@ import java.util.UUID
 
 import demo.core.api._
 import spray.json.DefaultJsonProtocol._
-import spray.json.{JsString, JsValue, JsonFormat}
+import spray.json.{JsString, JsValue, JsonFormat, RootJsonFormat}
 
 /**
   * Created by hollinwilkins on 3/28/16.
@@ -22,8 +22,9 @@ trait CoreJsonSupport {
   implicit val apiArtistFormat = jsonFormat3(Artist)
   implicit val apiSongFormat = jsonFormat4(Song)
 
-  implicit val apiCreateArtistResponseFormat = jsonFormat1(CreateArtistResponse)
-  implicit val apiReadArtistResponseFormat = jsonFormat1(ReadArtistResponse)
-  implicit val apiCreateSongResponseFormat = jsonFormat1(CreateSongResponse)
+  implicit val apiCreateArtistResponseFormat: RootJsonFormat[CreateArtistResponse] = jsonFormat1(CreateArtistResponse)
+  implicit val apiReadArtistResponseFormat: RootJsonFormat[ReadArtistResponse] = jsonFormat1(ReadArtistResponse)
+  implicit val apiCreateSongResponseFormat: RootJsonFormat[CreateSongResponse] = jsonFormat1(CreateSongResponse)
+  implicit val apiReadSongsResponseFormat: RootJsonFormat[ReadSongsResponse] = jsonFormat1(ReadSongsResponse)
 }
 object CoreJsonSupport extends CoreJsonSupport

@@ -12,6 +12,9 @@ case class CreateArtistResponse(artist: Artist)
 case class ReadArtistRequest(uid: UUID)
 case class ReadArtistResponse(artist: Artist)
 
-case class Song(uid: Option[UUID] = None, artistUid: UUID, name: String, duration: Int)
+case class Song(uid: Option[UUID] = None, artistUid: Option[UUID] = None, name: String, duration: Int)
 case class CreateSongRequest(song: Song)
 case class CreateSongResponse(song: Song)
+
+case class ReadSongsRequest(artistUid: UUID)
+case class ReadSongsResponse(songs: Seq[Song])

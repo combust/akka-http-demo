@@ -3,7 +3,7 @@ package demo.client
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse}
-import akka.http.scaladsl.unmarshalling.{FromResponseUnmarshaller, Unmarshal, Unmarshaller}
+import akka.http.scaladsl.unmarshalling.{FromResponseUnmarshaller, Unmarshal}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{BidiFlow, Flow}
 import demo.client.HttpClient.FlowType
