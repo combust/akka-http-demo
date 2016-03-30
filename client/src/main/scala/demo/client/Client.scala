@@ -13,21 +13,26 @@ trait Client {
   val ec: ExecutionContext
   val materializer: Materializer
 
-  val createArtistFlow: Flow[CreateArtistRequest, Future[CreateArtistResponse], Any]
-  val readArtistFlow: Flow[ReadArtistRequest, Future[ReadArtistResponse], Any]
-  val createSongFlow: Flow[CreateSongRequest, Future[CreateSongResponse], Any]
-  val listSongsFlow: Flow[ListSongsRequest, Future[ListSongsResponse], Any]
+  def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context), (Future[CreateArtistResponse], Context), Any]
+  def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context), (Future[ReadArtistResponse], Context), Any]
+  def createSongFlow[Context]: Flow[(CreateSongRequest, Context), (Future[CreateSongResponse], Context), Any]
+  def listSongsFlow[Context]: Flow[(ListSongsRequest, Context), (Future[ListSongsResponse], Context), Any]
 
-  def createArtist(request: CreateArtistRequest): Future[CreateArtistResponse] = run(createArtistFlow)(request)
-  def readArtist(request: ReadArtistRequest): Future[ReadArtistResponse] = run(readArtistFlow)(request)
-  def createSong(request: CreateSongRequest): Future[CreateSongResponse] = run(createSongFlow)(request)
-  def listSongs(request: ListSongsRequest): Future[ListSongsResponse] = run(listSongsFlow)(request)
+  private val defaultCreateArtistFlow = createArtistFlow[Any]
+  private val defaultReadArtistFlow = readArtistFlow[Any]
+  private val defaultCreateSongFlow = createSongFlow[Any]
+  private val defaultListSongsFlow = listSongsFlow[Any]
 
-  private def run[Request, Response](flow: Flow[Request, Future[Response], Any])
+  def createArtist(request: CreateArtistRequest): Future[CreateArtistResponse] = run(defaultCreateArtistFlow)(request)
+  def readArtist(request: ReadArtistRequest): Future[ReadArtistResponse] = run(defaultReadArtistFlow)(request)
+  def createSong(request: CreateSongRequest): Future[CreateSongResponse] = run(defaultCreateSongFlow)(request)
+  def listSongs(request: ListSongsRequest): Future[ListSongsResponse] = run(defaultListSongsFlow)(request)
+
+  private def run[Request, Response](flow: Flow[(Request, Any), (Future[Response], Any), Any])
                                     (request: Request): Future[Response] = {
-    Source.single(request)
+    Source.single((request, 42))
       .via(flow)
       .runWith(Sink.head)(materializer)
-      .flatMap(identity)(ec)
+      .flatMap(_._1)(ec)
   }
 }
