@@ -39,6 +39,12 @@ object ClientCli extends App {
     }, arg[Int]("duration") text "<duration in seconds>" action {
       (duration, config) => config.withValue("song.duration", configValue(duration))
     })
+    cmd("list-songs") action {
+      (_, config) => config.withValue("command.className", configValue("demo.client.driver.ListSongs"))
+    } text "List songs for an artist" children(
+      arg[String]("artist") text "<artist name of slug>" action {
+        (artist, config) => config.withValue("artistSlug", configValue(Util.slug(artist)))
+      })
   }
 
   parser.parse(args, ConfigFactory.defaultApplication()) match {

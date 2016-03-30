@@ -16,10 +16,12 @@ trait Client {
   val createArtistFlow: Flow[CreateArtistRequest, Future[CreateArtistResponse], Any]
   val readArtistFlow: Flow[ReadArtistRequest, Future[ReadArtistResponse], Any]
   val createSongFlow: Flow[CreateSongRequest, Future[CreateSongResponse], Any]
+  val listSongsFlow: Flow[ListSongsRequest, Future[ListSongsResponse], Any]
 
   def createArtist(request: CreateArtistRequest): Future[CreateArtistResponse] = run(createArtistFlow)(request)
   def readArtist(request: ReadArtistRequest): Future[ReadArtistResponse] = run(readArtistFlow)(request)
   def createSong(request: CreateSongRequest): Future[CreateSongResponse] = run(createSongFlow)(request)
+  def listSongs(request: ListSongsRequest): Future[ListSongsResponse] = run(listSongsFlow)(request)
 
   private def run[Request, Response](flow: Flow[Request, Future[Response], Any])
                                     (request: Request): Future[Response] = {

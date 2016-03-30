@@ -2,7 +2,7 @@ package demo.server.song
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import demo.core.api.{CreateSongRequest, ReadSongsRequest, Song}
+import demo.core.api.{CreateSongRequest, ListSongsRequest, Song}
 import demo.core.serialization.CoreJsonSupport._
 
 /**
@@ -18,7 +18,7 @@ case class SongResource(service: SongService) {
             complete(service.createSong(CreateSongRequest(song2)))
         }
       } ~ get {
-        complete(service.readSongs(ReadSongsRequest(artistSlug)))
+        complete(service.listSongs(ListSongsRequest(artistSlug)))
       }
   }
 }

@@ -14,5 +14,5 @@ case class Song(slug: Option[String] = None, artistSlug: Option[String] = None, 
 case class CreateSongRequest(song: Song)
 case class CreateSongResponse(song: Song)
 
-case class ReadSongsRequest(artistSlug: String)
-case class ReadSongsResponse(songs: Seq[Song])
+case class ListSongsRequest(artistSlug: String)
+case class ListSongsResponse(songs: Seq[Song])

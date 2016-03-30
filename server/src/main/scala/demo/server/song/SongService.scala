@@ -1,6 +1,6 @@
 package demo.server.song
 
-import demo.core.api.{CreateSongRequest, CreateSongResponse, ReadSongsRequest, ReadSongsResponse}
+import demo.core.api.{CreateSongRequest, CreateSongResponse, ListSongsRequest, ListSongsResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -14,8 +14,8 @@ case class SongService(songDb: SongDatabase)
       .map(CreateSongResponse)
   }
 
-  def readSongs(request: ReadSongsRequest): Future[ReadSongsResponse] = {
+  def listSongs(request: ListSongsRequest): Future[ListSongsResponse] = {
     songDb.songsForArtist(request.artistSlug)
-      .map(ReadSongsResponse)
+      .map(ListSongsResponse)
   }
 }

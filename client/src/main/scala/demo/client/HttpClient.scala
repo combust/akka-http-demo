@@ -8,7 +8,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{BidiFlow, Flow, Source}
 import demo.client.HttpClient.FlowType
 import demo.core.api.{ReadArtistResponse, _}
-import spray.json._
 import demo.core.serialization.CoreJsonSupport._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.Marshal
@@ -56,6 +55,17 @@ case class HttpClient(flow: FlowType)
     BidiFlow.fromFlows(outbound, inbound[ReadArtistResponse]).join(flow)
   }
 
+  override val listSongsFlow: Flow[ListSongsRequest, Future[ListSongsResponse], Any] = {
+    val outbound = Flow[ListSongsRequest].map {
+      request =>
+        val httpRequest = HttpRequest(uri = s"/artists/${request.artistSlug}/songs",
+          method = HttpMethods.GET)
+        (httpRequest, Unit)
+    }
+
+    BidiFlow.fromFlows(outbound, inbound[ListSongsResponse]).join(flow)
+  }
+
   override val createArtistFlow: Flow[CreateArtistRequest, Future[CreateArtistResponse], Any] = {
     val outbound = Flow[CreateArtistRequest].map {
       request => Marshal(request.artist).to[MessageEntity]
@@ -72,10 +82,10 @@ case class HttpClient(flow: FlowType)
 
   override val createSongFlow: Flow[CreateSongRequest, Future[CreateSongResponse], Any] = {
     val outbound = Flow[CreateSongRequest].map {
-      request => Marshal(request.song).to[MessageEntity]
+      request => Marshal(request.song).to[MessageEntity].map(entity => (request, entity))
     }.flatMapConcat(Source.fromFuture).map {
-      entity =>
-        val httpRequest = HttpRequest(uri = "/artists",
+      case (request, entity) =>
+        val httpRequest = HttpRequest(uri = s"/artists/${request.song.artistSlug.get}/songs",
           method = HttpMethods.POST,
           entity = entity)
         (httpRequest, Unit)
