@@ -24,25 +24,25 @@ object ClientCli extends App {
     cmd("create-artist") action {
       (_, config) => config.withValue("command.className", configValue("demo.client.driver.CreateArtist"))
     } text "Create an artist on the server" children(
-      arg[String]("name") text "<artist name>" action {
+      opt[String]("name") required() text "<artist name>" action {
         (name, config) => config.withValue("artist.name", configValue(name))
-      }, arg[String]("genre") text "<artist genre>" action {
+      }, opt[String]("genre") required() text "<artist genre>" action {
       (genre, config) => config.withValue("artist.genre", configValue(genre))
     })
     cmd("create-song") action {
       (_, config) => config.withValue("command.className", configValue("demo.client.driver.CreateSong"))
     } text "Create a song for an artist" children(
-      arg[String]("artist") text "<artist name or slug>" action {
+      opt[String]("artist") required() text "<artist name or slug>" action {
         (artist, config) => config.withValue("song.artistSlug", configValue(Util.slug(artist)))
-      }, arg[String]("name") text "<song name>" action {
+      }, opt[String]("name") required() text "<song name>" action {
       (name, config) => config.withValue("song.name", configValue(name))
-    }, arg[Int]("duration") text "<duration in seconds>" action {
+    }, opt[Int]("duration") required() text "<duration in seconds>" action {
       (duration, config) => config.withValue("song.duration", configValue(duration))
     })
     cmd("list-songs") action {
       (_, config) => config.withValue("command.className", configValue("demo.client.driver.ListSongs"))
     } text "List songs for an artist" children(
-      arg[String]("artist") text "<artist name of slug>" action {
+      opt[String]("artist") required() text "<artist name of slug>" action {
         (artist, config) => config.withValue("artistSlug", configValue(Util.slug(artist)))
       })
   }
