@@ -43,7 +43,8 @@ case class HttpClient(uri: Uri)
         (httpRequest, context)
     }
 
-    BidiFlow.fromFlows(outbound, inbound[ReadArtistResponse, Context]).join(flow[Context])
+    BidiFlow.fromFlows(outbound, inbound[ReadArtistResponse, Context])
+      .join(flow[Context])
   }
 
   override def listSongsFlow[Context]: Flow[(ListSongsRequest, Context), (Future[ListSongsResponse], Context), Any] = {
@@ -54,10 +55,12 @@ case class HttpClient(uri: Uri)
         (httpRequest, context)
     }
 
-    BidiFlow.fromFlows(outbound, inbound[ListSongsResponse, Context]).join(flow[Context])
+    BidiFlow.fromFlows(outbound, inbound[ListSongsResponse, Context])
+      .join(flow[Context])
   }
 
-  override def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context), (Future[CreateArtistResponse], Context), Any] = {
+  override def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context),
+    (Future[CreateArtistResponse], Context), Any] = {
     val outbound = Flow[(CreateArtistRequest, Context)].map {
       case (request, context) =>
         Marshal(request.artist).to[MessageEntity].map(entity => (entity, context))
@@ -69,7 +72,8 @@ case class HttpClient(uri: Uri)
         (httpRequest, context)
     }
 
-    BidiFlow.fromFlows(outbound, inbound[CreateArtistResponse, Context]).join(flow[Context])
+    BidiFlow.fromFlows(outbound, inbound[CreateArtistResponse, Context])
+      .join(flow[Context])
   }
 
   override def createSongFlow[Context]: Flow[(CreateSongRequest, Context), (Future[CreateSongResponse], Context), Any] = {
@@ -84,10 +88,12 @@ case class HttpClient(uri: Uri)
         (httpRequest, context)
     }
 
-    BidiFlow.fromFlows(outbound, inbound[CreateSongResponse, Context]).join(flow[Context])
+    BidiFlow.fromFlows(outbound, inbound[CreateSongResponse, Context])
+      .join(flow[Context])
   }
 
-  private def flow[Context]: Flow[(HttpRequest, Context), (Try[HttpResponse], Context), Any] = {
+  private def flow[Context]: Flow[(HttpRequest, Context),
+    (Try[HttpResponse], Context), Any] = {
     scheme match {
       case "http" =>
         Http().cachedHostConnectionPool[Context](hostName, port)
@@ -97,7 +103,8 @@ case class HttpClient(uri: Uri)
   }
 
   private def inbound[Response, Context]
-  (implicit um: FromEntityUnmarshaller[Response]): Flow[(Try[HttpResponse], Context), (Future[Response], Context), Any] = {
+  (implicit um: FromEntityUnmarshaller[Response]): Flow[(Try[HttpResponse], Context),
+    (Future[Response], Context), Any] = {
     Flow[(Try[HttpResponse], Context)].map {
       case (tryResponse, context) =>
         val r = Future.fromTry(tryResponse).flatMap {
