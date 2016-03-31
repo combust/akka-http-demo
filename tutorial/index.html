@@ -651,7 +651,11 @@ println(s&quot;Successfully created artist with slug: ${response.artist.slug.get
 
 <p>Let&#39;s go through and run the example to see what it does.</p>
 
-<h3 id="toc_6">Get the Code</h3>
+<h3 id="toc_6">Get the Code from Lightbend Activator</h3>
+
+<p>You can get the code as an <a href="https://www.lightbend.com/activator/template/akka-http-demo">Activator tutorial</a>.</p>
+
+<h3 id="toc_7">Get the Code from Github</h3>
 
 <p>Get the demo code from <a href="https://github.com/">Github</a> and checkout the branch for this blog post:</p>
 
@@ -659,13 +663,13 @@ println(s&quot;Successfully created artist with slug: ${response.artist.slug.get
 cd akka-http-demo
 git checkout blog1</code></pre></div>
 
-<h3 id="toc_7">Run the Server</h3>
+<h3 id="toc_8">Run the Server</h3>
 
 <p>Start our demo server up and serve HTTP requests!</p>
 
 <div><pre><code class="language-bash">sbt server/run</code></pre></div>
 
-<h3 id="toc_8">Use the Server with CURL</h3>
+<h3 id="toc_9">Use the Server with CURL</h3>
 
 <p>Let&#39;s run some simple CURL commands to add an artist and some songs for that artist.</p>
 
@@ -692,7 +696,7 @@ git checkout blog1</code></pre></div>
 
 <div><pre><code class="language-bash">curl -v -XGET http://localhost:8080/artists/julie-fowlis/songs</code></pre></div>
 
-<h3 id="toc_9">Use the Server With the Client CLI</h3>
+<h3 id="toc_10">Use the Server With the Client CLI</h3>
 
 <p>The command line interface to the client uses our client library we built, let&#39;s see how we can use it to add an artist and some songs for her.</p>
 
@@ -718,7 +722,7 @@ git checkout blog1</code></pre></div>
 <div><pre><code class="language-bash">sbt &quot;client/run list-songs -h http://localhost:8080 \
   --artist \&quot;Julie Fowlis\&quot;&quot;</code></pre></div>
 
-<h2 id="toc_10">Up Next</h2>
+<h2 id="toc_11">Up Next</h2>
 
 <p>For the next blog post, let&#39;s add the option to use Protobuf serialization instead of JSON. This should make our server go much faster, as Protobufs are very efficient compared to JSON.</p>
 
