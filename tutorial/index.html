@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<title>2016-03-30-flexible-akka-clients-and-servers-part-1</title>
+
+
+<style type="text/css">
+body {
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: white;
+  padding: 30px; }
+
+body > *:first-child {
+  margin-top: 0 !important; }
+body > *:last-child {
+  margin-bottom: 0 !important; }
+
+a {
+  color: #4183C4; }
+a.absent {
+  color: #cc0000; }
+a.anchor {
+  display: block;
+  padding-left: 30px;
+  margin-left: -30px;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  cursor: text;
+  position: relative; }
+
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA09pVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoMTMuMCAyMDEyMDMwNS5tLjQxNSAyMDEyLzAzLzA1OjIxOjAwOjAwKSAgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OUM2NjlDQjI4ODBGMTFFMTg1ODlEODNERDJBRjUwQTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OUM2NjlDQjM4ODBGMTFFMTg1ODlEODNERDJBRjUwQTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5QzY2OUNCMDg4MEYxMUUxODU4OUQ4M0REMkFGNTBBNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo5QzY2OUNCMTg4MEYxMUUxODU4OUQ4M0REMkFGNTBBNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PsQhXeAAAABfSURBVHjaYvz//z8DJYCRUgMYQAbAMBQIAvEqkBQWXI6sHqwHiwG70TTBxGaiWwjCTGgOUgJiF1J8wMRAIUA34B4Q76HUBelAfJYSA0CuMIEaRP8wGIkGMA54bgQIMACAmkXJi0hKJQAAAABJRU5ErkJggg==) no-repeat 10px center;
+  text-decoration: none; }
+
+h1 tt, h1 code {
+  font-size: inherit; }
+
+h2 tt, h2 code {
+  font-size: inherit; }
+
+h3 tt, h3 code {
+  font-size: inherit; }
+
+h4 tt, h4 code {
+  font-size: inherit; }
+
+h5 tt, h5 code {
+  font-size: inherit; }
+
+h6 tt, h6 code {
+  font-size: inherit; }
+
+h1 {
+  font-size: 28px;
+  color: black; }
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #cccccc;
+  color: black; }
+
+h3 {
+  font-size: 18px; }
+
+h4 {
+  font-size: 16px; }
+
+h5 {
+  font-size: 14px; }
+
+h6 {
+  color: #777777;
+  font-size: 14px; }
+
+p, blockquote, ul, ol, dl, li, table, pre {
+  margin: 15px 0; }
+
+hr {
+  background: transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OENDRjNBN0E2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OENDRjNBN0I2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Q0NGM0E3ODY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Q0NGM0E3OTY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqqezsUAAAAfSURBVHjaYmRABcYwBiM2QSA4y4hNEKYDQxAEAAIMAHNGAzhkPOlYAAAAAElFTkSuQmCC) repeat-x 0 0;
+  border: 0 none;
+  color: #cccccc;
+  height: 4px;
+  padding: 0;
+}
+
+body > h2:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+body > h1:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+  body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0; }
+body > h3:first-child, body > h4:first-child, body > h5:first-child, body > h6:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0; }
+
+h1 p, h2 p, h3 p, h4 p, h5 p, h6 p {
+  margin-top: 0; }
+
+li p.first {
+  display: inline-block; }
+li {
+  margin: 0; }
+ul, ol {
+  padding-left: 30px; }
+
+ul :first-child, ol :first-child {
+  margin-top: 0; }
+
+dl {
+  padding: 0; }
+  dl dt {
+    font-size: 14px;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin: 15px 0 5px; }
+    dl dt:first-child {
+      padding: 0; }
+    dl dt > :first-child {
+      margin-top: 0; }
+    dl dt > :last-child {
+      margin-bottom: 0; }
+  dl dd {
+    margin: 0 0 15px;
+    padding: 0 15px; }
+    dl dd > :first-child {
+      margin-top: 0; }
+    dl dd > :last-child {
+      margin-bottom: 0; }
+
+blockquote {
+  border-left: 4px solid #dddddd;
+  padding: 0 15px;
+  color: #777777; }
+  blockquote > :first-child {
+    margin-top: 0; }
+  blockquote > :last-child {
+    margin-bottom: 0; }
+
+table {
+  padding: 0;border-collapse: collapse; }
+  table tr {
+    border-top: 1px solid #cccccc;
+    background-color: white;
+    margin: 0;
+    padding: 0; }
+    table tr:nth-child(2n) {
+      background-color: #f8f8f8; }
+    table tr th {
+      font-weight: bold;
+      border: 1px solid #cccccc;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr td {
+      border: 1px solid #cccccc;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr th :first-child, table tr td :first-child {
+      margin-top: 0; }
+    table tr th :last-child, table tr td :last-child {
+      margin-bottom: 0; }
+
+img {
+  max-width: 100%; }
+
+span.frame {
+  display: block;
+  overflow: hidden; }
+  span.frame > span {
+    border: 1px solid #dddddd;
+    display: block;
+    float: left;
+    overflow: hidden;
+    margin: 13px 0 0;
+    padding: 7px;
+    width: auto; }
+  span.frame span img {
+    display: block;
+    float: left; }
+  span.frame span span {
+    clear: both;
+    color: #333333;
+    display: block;
+    padding: 5px 0 0; }
+span.align-center {
+  display: block;
+  overflow: hidden;
+  clear: both; }
+  span.align-center > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px auto 0;
+    text-align: center; }
+  span.align-center span img {
+    margin: 0 auto;
+    text-align: center; }
+span.align-right {
+  display: block;
+  overflow: hidden;
+  clear: both; }
+  span.align-right > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px 0 0;
+    text-align: right; }
+  span.align-right span img {
+    margin: 0;
+    text-align: right; }
+span.float-left {
+  display: block;
+  margin-right: 13px;
+  overflow: hidden;
+  float: left; }
+  span.float-left span {
+    margin: 13px 0 0; }
+span.float-right {
+  display: block;
+  margin-left: 13px;
+  overflow: hidden;
+  float: right; }
+  span.float-right > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px auto 0;
+    text-align: right; }
+
+code, tt {
+  margin: 0 2px;
+  padding: 0 5px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px; }
+
+pre code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent; }
+
+.highlight pre {
+  background-color: #f8f8f8;
+  border: 1px solid #cccccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px; }
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #cccccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px; }
+  pre code, pre tt {
+    background-color: transparent;
+    border: none; }
+
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:0 auto;
+    }
+}
+@media print {
+	table, pre {
+		page-break-inside: avoid;
+	}
+	pre {
+		word-wrap: break-word;
+	}
+}
+</style>
+
+<style type="text/css">
+/*
+ Solarized Color Schemes originally by Ethan Schoonover
+ http://ethanschoonover.com/solarized
+
+ Ported for PrismJS by Hector Matos
+ Website: https://krakendev.io
+ Twitter Handle: https://twitter.com/allonsykraken)
+*/
+
+/*
+SOLARIZED HEX
+--------- -------
+base03    #002b36
+base02    #073642
+base01    #586e75
+base00    #657b83
+base0     #839496
+base1     #93a1a1
+base2     #eee8d5
+base3     #fdf6e3
+yellow    #b58900
+orange    #cb4b16
+red       #dc322f
+magenta   #d33682
+violet    #6c71c4
+blue      #268bd2
+cyan      #2aa198
+green     #859900
+*/
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #657b83; /* base00 */
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
+code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
+	background: #073642; /* base02 */
+}
+
+pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
+code[class*="language-"]::selection, code[class*="language-"] ::selection {
+	background: #073642; /* base02 */
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background-color: #fdf6e3; /* base3 */
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #93a1a1; /* base1 */
+}
+
+.token.punctuation {
+	color: #586e75; /* base01 */
+}
+
+.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #268bd2; /* blue */
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.url,
+.token.inserted {
+	color: #2aa198; /* cyan */
+}
+
+.token.entity {
+	color: #657b83; /* base00 */
+	background: #eee8d5; /* base2 */
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+	color: #859900; /* green */
+}
+
+.token.function {
+	color: #b58900; /* yellow */
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+	color: #cb4b16; /* orange */
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<h1 id="toc_0">Flexible Akka Clients and Servers: Part 1</h1>
+
+<p>Akka is a wonderful actor library for Scala that is heavily inspired by the <a href="http://erlang.org/doc/">Erlang OTP library</a>. Recently <a href="http://doc.akka.io/docs/akka/2.4.2/scala/stream/index.html">Akka streams</a> has been released. The Akka streams module is an interface on top of <a href="http://www.reactive-streams.org/">reactive streams</a> that makes stream-based programming a delight. Akka streams are ideally suited for client/server development as they make it easy to handle things like backpressure in a system, long vs. short running requests, and concurrent request processing. There are a lot of brilliant people working on this project at <a href="https://www.lightbend.com/">Lightbend</a> (formerly Typesafe). The <a href="http://doc.akka.io/docs/akka/2.4.2/scala.html">reference docs</a> are a good starting point for development, but there are few examples of how to put all the pieces together in a structured and deliberate way to make a modular client/server. With this blog series I will go overto develop microservice APIs and their clients in a modular and extensible manner.</p>
+
+<p>Let&#39;s go through the process of making a simple server for storing artists and the songs that they have in their repertoire. We will keep the example simple by storing all of our data in an in-memory HashMap. Let&#39;s also write a client for our server that is flexible in terms of transport protocol (raw TCP or HTTP) as well as serialization method (JSON, Protobufs, or your serialization format du jour). For this example, we will only implement the JSON over HTTP protocol for our client/server, but the code will be written in such a way that it should be easy to plugin a new combination fairly easily by implementing different <a href="http://doc.akka.io/docs/akka/2.4.2/scala/stream/stream-flows-and-basics.html">Akka stream flows</a>. We want to share as much code between our server and client as possible so that generating a request/response uses the same objects between the client and server. Let&#39;s get started!</p>
+
+<h2 id="toc_1">Modules</h2>
+
+<p>This project is broken into three modules in order to cleanly separate our code:</p>
+
+<ol>
+<li>core - contains all of the shared messages, marshallers, custom content-types, etc</li>
+<li>server - our artist/song server, we will only support HTTP with JSON serialization for now to simplify our task</li>
+<li>client - Akka-stream-based client for our HTTP/JSON server, we will keep the code generic enough to easily implement different serializations or transports later</li>
+</ol>
+
+<h3 id="toc_2">Core</h3>
+
+<p>The core module contains all of the shared code between the client and server. For this example, it will contain the request/response messages and JSON serializers for those messages.</p>
+
+<p>Here is an example request/response pair:</p>
+
+<div><pre><code class="language-scala">case class Artist(uid: Option[UUID] = None, name: String, popularity: Int)
+case class CreateArtistRequest(artist: Artist)
+case class CreateArtistResponse(artist: Artist)</code></pre></div>
+
+<p>Here are the corresponding JSON formats ala <a href="https://github.com/spray/spray-json">Spray JSON</a>. Note that we only need the format for the response, as the request is constructed by the server from the HTTP request.</p>
+
+<div><pre><code class="language-scala">trait CoreJsonSupport {
+  implicit val apiArtistFormat: RootJsonFormat[Artist] = jsonFormat3(Artist)
+
+  implicit val apiCreateArtistResponseFormat: RootJsonFormat[CreateArtistResponse] =
+    jsonFormat1(CreateArtistResponse)
+}
+object CoreJsonSupport extends CoreJsonSupport</code></pre></div>
+
+<p>I like using the pattern of creating a trait with all JSON formats then making a singleton object that extends from it. This allows for two ways to use the JSON formats:</p>
+
+<ol>
+<li>Extend from the trait</li>
+<li>Import the formats from the singleton object</li>
+</ol>
+
+<h3 id="toc_3">Server</h3>
+
+<p>When writing resources for the server, I like to use two core files for each resource: a service file and a resource file. The service file provides the API based on our request/response case classes. Here is our artist service:</p>
+
+<div><pre><code class="language-scala">case class ArtistService(artistDb: ArtistDatabase)
+                        (implicit ec: ExecutionContext) {
+  def createArtist(request: CreateArtistRequest): Future[CreateArtistResponse] =  ...
+
+  def readArtist(request: ReadArtistRequest): Future[ReadArtistResponse] = ...
+}</code></pre></div>
+
+<p>We use futures so that we don&#39;t have to block waiting for the response in the case we are going out to a database or some other asynchronous resource to get the information.</p>
+
+<p>The artist resource uses the Akka HTTP routing DSL in order to route HTTP requests to the underlying service API. Our artist resource looks like this:</p>
+
+<div><pre><code class="language-scala">case class ArtistResource(service: ArtistService) {
+  val routes = path(&quot;artists&quot;) {
+    post {
+      entity(as[Artist]) {
+        artist =&gt;
+          complete(service.createArtist(CreateArtistRequest(artist)))
+      }
+    }
+  } ~ path(&quot;artists&quot; / Segment) {
+    slug =&gt;
+      get {
+        complete(service.readArtist(ReadArtistRequest(slug)))
+      }
+  }
+}</code></pre></div>
+
+<p>We can now route HTTP requests to our service API through the routes variable contained in our resource file! In order to support multiple resources, we can simply concatenate the two routes variables like so: <code>artistResource.routes ~ songResource.routes</code>. Also, separating our service logic into another file from the HTTP resource will make it easy to support transport protocols other than HTTP, such as a raw TCP socket.</p>
+
+<h3 id="toc_4">Client</h3>
+
+<p>We want our client interface to support an combination of transport protocol and serialization format. We also want to support easily integrating our client with an Akka stream or use it as a simple request/response client. In order to accomplish this, we will make a flow for each of our request/response pairs and we will build our client API off of those. Let&#39;s take a look at what I&#39;m talking about with our <code>Client</code> trait:</p>
+
+<div><pre><code class="language-scala">trait Client {
+  val ec: ExecutionContext
+  val materializer: Materializer
+
+  def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context),
+    (Try[CreateArtistResponse], Context), Any]
+  def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context),
+    (Try[ReadArtistResponse], Context), Any]
+  def createSongFlow[Context]: Flow[(CreateSongRequest, Context),
+    (Try[CreateSongResponse], Context), Any]
+  def listSongsFlow[Context]: Flow[(ListSongsRequest, Context),
+    (Try[ListSongsResponse], Context), Any]
+
+  private val defaultCreateArtistFlow = createArtistFlow[Any]
+  private val defaultReadArtistFlow = readArtistFlow[Any]
+  private val defaultCreateSongFlow = createSongFlow[Any]
+  private val defaultListSongsFlow = listSongsFlow[Any]
+
+  def createArtist(request: CreateArtistRequest): Future[CreateArtistResponse] =
+    run(defaultCreateArtistFlow)(request)
+  def readArtist(request: ReadArtistRequest): Future[ReadArtistResponse] =
+    run(defaultReadArtistFlow)(request)
+  def createSong(request: CreateSongRequest): Future[CreateSongResponse] =
+    run(defaultCreateSongFlow)(request)
+  def listSongs(request: ListSongsRequest): Future[ListSongsResponse] =
+    run(defaultListSongsFlow)(request)
+
+  private def run[Request, Response](flow: Flow[(Request, Any), (Try[Response], Any), Any])
+                                    (request: Request): Future[Response] = {
+    Source.single((request, 42))
+      .via(flow)
+      .runWith(Sink.head)(materializer)
+      .map(_._1)
+      .flatMap(Future.fromTry)
+  }
+}</code></pre></div>
+
+<p>So now in order to get a nice client implementation, such as for an HTTP-based client, all we have to do is implement the different request/response flows. This also allows us to easily integrate our clients into Akka stream graphs. In order to keep the serialization protocol flexible, we will use Akka HTTP marshalling to encode/decode our HTTP entities. Here is the implementation of <code>createArtistFlow</code> in <code>HttpClient</code>:</p>
+
+<div><pre><code class="language-scala">case class HttpClient(uri: Uri)
+                     (override implicit val ec: ExecutionContext,
+                      override implicit val materializer: Materializer,
+                      implicit val system: ActorSystem) extends Client {
+  val hostName = uri.authority.host.address()
+  val port = uri.authority.port
+  val scheme = uri.scheme
+
+  override def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context),
+    (Try[CreateArtistResponse], Context), Any] = {
+    val outbound = Flow[(CreateArtistRequest, Context)].map {
+      case (request, context) =&gt;
+        Marshal(request.artist).to[MessageEntity].map(entity =&gt; (entity, context))
+    }.flatMapConcat(Source.fromFuture).map {
+      case (entity, context) =&gt;
+        val httpRequest = HttpRequest(uri = &quot;/artists&quot;,
+          method = HttpMethods.POST,
+          entity = entity)
+        (httpRequest, context)
+    }
+
+    BidiFlow.fromFlows(outbound, inbound[CreateArtistResponse, Context])
+      .join(flow[Context])
+  }
+
+  private def flow[Context]: Flow[(HttpRequest, Context),
+    (Try[HttpResponse], Context), Any] = {
+    scheme match {
+      case &quot;http&quot; =&gt;
+        Http().cachedHostConnectionPool[Context](hostName, port)
+      case &quot;https&quot; =&gt;
+        Http().cachedHostConnectionPoolHttps[Context](hostName, port)
+    }
+  }
+
+  private def inbound[Response, Context]
+  (implicit um: FromEntityUnmarshaller[Response]): Flow[(Try[HttpResponse], Context),
+    (Try[Response], Context), Any] = {
+    Flow[(Try[HttpResponse], Context)].map {
+      case (tryResponse, context) =&gt;
+        tryResponse match {
+          case Success(response) =&gt;
+            Unmarshal(response.entity).to[Response].map(response =&gt; (Try(response), context))
+          case Failure(error) =&gt; Future.fromTry(Failure(error))
+        }
+    }.flatMapConcat(Source.fromFuture)
+  }
+}</code></pre></div>
+
+<p>What we are left with is an extremely flexible interface that can be used in flow graphs or as a simple request/response client. Here is a simple example of using the client to create an artist in our API server.</p>
+
+<div><pre><code class="language-scala">import demo.core.api._
+import demo.client.HttpClient
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+val client = HttpClient(&quot;http://localhost:8080&quot;)
+val request = CreateArtistRequest(Artist(name = &quot;Julie Fowlis&quot;,
+  genre = &quot;Celtic&quot;))
+
+// Do not block in production code
+val response = Await.result(client.createArtist(request), 5.seconds)
+
+println(s&quot;Successfully created artist with slug: ${response.artist.slug.get}&quot;)</code></pre></div>
+
+<h2 id="toc_5">Running Our Example</h2>
+
+<p>Let&#39;s go through and run the example to see what it does.</p>
+
+<h3 id="toc_6">Get the Code</h3>
+
+<p>Get the demo code from <a href="https://github.com/">Github</a> and checkout the branch for this blog post:</p>
+
+<div><pre><code class="language-bash">git clone https://github.com/combust-ml/akka-http-demo.git
+cd akka-http-demo
+git checkout blog1</code></pre></div>
+
+<h3 id="toc_7">Run the Server</h3>
+
+<p>Start our demo server up and serve HTTP requests!</p>
+
+<div><pre><code class="language-bash">sbt server/run</code></pre></div>
+
+<h3 id="toc_8">Use the Server with CURL</h3>
+
+<p>Let&#39;s run some simple CURL commands to add an artist and some songs for that artist.</p>
+
+<p>Create an Julie Fowlis as an artist</p>
+
+<div><pre><code class="language-bash">curl -v -XPOST \
+  -H &quot;content-type: application/json&quot; \
+  -d &#39;{&quot;name&quot;: &quot;Julie Fowlis&quot;, &quot;popularity&quot;: 95}&#39; \
+  http://localhost:8080/artists</code></pre></div>
+
+<p>Add some songs for Julie</p>
+
+<div><pre><code class="language-bash">curl -v -XPOST \
+  -H &quot;content-type: application/json&quot; \
+  -d &#39;{&quot;name&quot;: &quot;Puirt-a-Buel&quot;, &quot;duration&quot;: 255}&#39; \
+  http://localhost:8080/artists/julie-fowlis/songs</code></pre></div>
+
+<div><pre><code class="language-bash">curl -v -XPOST \
+  -H &quot;content-type: application/json&quot; \
+  -d &#39;{&quot;name&quot;: &quot;Do Chalum&quot;, &quot;duration&quot;: 201}&#39; \
+  http://localhost:8080/artists/julie-fowlis/songs</code></pre></div>
+
+<p>Get a list of all of Julie Fowlis&#39; songs</p>
+
+<div><pre><code class="language-bash">curl -v -XGET http://localhost:8080/artists/julie-fowlis/songs</code></pre></div>
+
+<h3 id="toc_9">Use the Server With the Client CLI</h3>
+
+<p>The command line interface to the client uses our client library we built, let&#39;s see how we can use it to add an artist and some songs for her.</p>
+
+<p>Create an artist using the client CLI</p>
+
+<div><pre><code class="language-bash">sbt &quot;client/run create-artist -h http://localhost:8080 \
+  --name \&quot;Julie Fowlis\&quot; --genre Celtic&quot;</code></pre></div>
+
+<p>Create some songs for Julie Fowlis</p>
+
+<div><pre><code class="language-bash">sbt &quot;client/run create-song -h http://localhost:8080 \
+  --artist \&quot;Julie Fowlis\&quot; \
+  --name \&quot;Oran Fir Heisgeir\&quot; \
+  --duration 232&quot;</code></pre></div>
+
+<div><pre><code class="language-bash">sbt &quot;client/run create-song -h http://localhost:8080 \
+  --artist \&quot;Julie Fowlis\&quot; \
+  --name \&quot;A Rigoain Uasail\&quot; \
+  --duration 206&quot;</code></pre></div>
+
+<p>List all of Julie Fowlis&#39; songs</p>
+
+<div><pre><code class="language-bash">sbt &quot;client/run list-songs -h http://localhost:8080 \
+  --artist \&quot;Julie Fowlis\&quot;&quot;</code></pre></div>
+
+<h2 id="toc_10">Up Next</h2>
+
+<p>For the next blog post, let&#39;s add the option to use Protobuf serialization instead of JSON. This should make our server go much faster, as Protobufs are very efficient compared to JSON.</p>
+
+
+
+<script type="text/javascript">
+var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(){var e=/\blang(?:uage)?-(\w+)\b/i,t=0,n=_self.Prism={util:{encode:function(e){return e instanceof a?new a(e.type,n.util.encode(e.content),e.alias):"Array"===n.util.type(e)?e.map(n.util.encode):e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).match(/\[object (\w+)\]/)[1]},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function(e){var t=n.util.type(e);switch(t){case"Object":var a={};for(var r in e)e.hasOwnProperty(r)&&(a[r]=n.util.clone(e[r]));return a;case"Array":return e.map&&e.map(function(e){return n.util.clone(e)})}return e}},languages:{extend:function(e,t){var a=n.util.clone(n.languages[e]);for(var r in t)a[r]=t[r];return a},insertBefore:function(e,t,a,r){r=r||n.languages;var l=r[e];if(2==arguments.length){a=arguments[1];for(var i in a)a.hasOwnProperty(i)&&(l[i]=a[i]);return l}var o={};for(var s in l)if(l.hasOwnProperty(s)){if(s==t)for(var i in a)a.hasOwnProperty(i)&&(o[i]=a[i]);o[s]=l[s]}return n.languages.DFS(n.languages,function(t,n){n===r[e]&&t!=e&&(this[t]=o)}),r[e]=o},DFS:function(e,t,a,r){r=r||{};for(var l in e)e.hasOwnProperty(l)&&(t.call(e,l,e[l],a||l),"Object"!==n.util.type(e[l])||r[n.util.objId(e[l])]?"Array"!==n.util.type(e[l])||r[n.util.objId(e[l])]||(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,l,r)):(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,null,r)))}},plugins:{},highlightAll:function(e,t){var a={callback:t,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};n.hooks.run("before-highlightall",a);for(var r,l=a.elements||document.querySelectorAll(a.selector),i=0;r=l[i++];)n.highlightElement(r,e===!0,a.callback)},highlightElement:function(t,a,r){for(var l,i,o=t;o&&!e.test(o.className);)o=o.parentNode;o&&(l=(o.className.match(e)||[,""])[1],i=n.languages[l]),t.className=t.className.replace(e,"").replace(/\s+/g," ")+" language-"+l,o=t.parentNode,/pre/i.test(o.nodeName)&&(o.className=o.className.replace(e,"").replace(/\s+/g," ")+" language-"+l);var s=t.textContent,u={element:t,language:l,grammar:i,code:s};if(!s||!i)return n.hooks.run("complete",u),void 0;if(n.hooks.run("before-highlight",u),a&&_self.Worker){var c=new Worker(n.filename);c.onmessage=function(e){u.highlightedCode=e.data,n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(u.element),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},c.postMessage(JSON.stringify({language:u.language,code:u.code,immediateClose:!0}))}else u.highlightedCode=n.highlight(u.code,u.grammar,u.language),n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(t),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},highlight:function(e,t,r){var l=n.tokenize(e,t);return a.stringify(n.util.encode(l),r)},tokenize:function(e,t){var a=n.Token,r=[e],l=t.rest;if(l){for(var i in l)t[i]=l[i];delete t.rest}e:for(var i in t)if(t.hasOwnProperty(i)&&t[i]){var o=t[i];o="Array"===n.util.type(o)?o:[o];for(var s=0;s<o.length;++s){var u=o[s],c=u.inside,g=!!u.lookbehind,h=!!u.greedy,f=0,d=u.alias;u=u.pattern||u;for(var p=0;p<r.length;p++){var m=r[p];if(r.length>e.length)break e;if(!(m instanceof a)){u.lastIndex=0;var y=u.exec(m),v=1;if(!y&&h&&p!=r.length-1){var b=r[p+1].matchedStr||r[p+1],k=m+b;if(p<r.length-2&&(k+=r[p+2].matchedStr||r[p+2]),u.lastIndex=0,y=u.exec(k),!y)continue;var w=y.index+(g?y[1].length:0);if(w>=m.length)continue;var _=y.index+y[0].length,P=m.length+b.length;if(v=3,P>=_){if(r[p+1].greedy)continue;v=2,k=k.slice(0,P)}m=k}if(y){g&&(f=y[1].length);var w=y.index+f,y=y[0].slice(f),_=w+y.length,S=m.slice(0,w),O=m.slice(_),j=[p,v];S&&j.push(S);var A=new a(i,c?n.tokenize(y,c):y,d,y,h);j.push(A),O&&j.push(O),Array.prototype.splice.apply(r,j)}}}}}return r},hooks:{all:{},add:function(e,t){var a=n.hooks.all;a[e]=a[e]||[],a[e].push(t)},run:function(e,t){var a=n.hooks.all[e];if(a&&a.length)for(var r,l=0;r=a[l++];)r(t)}}},a=n.Token=function(e,t,n,a,r){this.type=e,this.content=t,this.alias=n,this.matchedStr=a||null,this.greedy=!!r};if(a.stringify=function(e,t,r){if("string"==typeof e)return e;if("Array"===n.util.type(e))return e.map(function(n){return a.stringify(n,t,e)}).join("");var l={type:e.type,content:a.stringify(e.content,t,r),tag:"span",classes:["token",e.type],attributes:{},language:t,parent:r};if("comment"==l.type&&(l.attributes.spellcheck="true"),e.alias){var i="Array"===n.util.type(e.alias)?e.alias:[e.alias];Array.prototype.push.apply(l.classes,i)}n.hooks.run("wrap",l);var o="";for(var s in l.attributes)o+=(o?" ":"")+s+'="'+(l.attributes[s]||"")+'"';return"<"+l.tag+' class="'+l.classes.join(" ")+'" '+o+">"+l.content+"</"+l.tag+">"},!_self.document)return _self.addEventListener?(_self.addEventListener("message",function(e){var t=JSON.parse(e.data),a=t.language,r=t.code,l=t.immediateClose;_self.postMessage(n.highlight(r,n.languages[a],a)),l&&_self.close()},!1),_self.Prism):_self.Prism;var r=document.currentScript||[].slice.call(document.getElementsByTagName("script")).pop();return r&&(n.filename=r.src,document.addEventListener&&!r.hasAttribute("data-manual")&&document.addEventListener("DOMContentLoaded",n.highlightAll)),_self.Prism}();"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
+</script>
+
+<script type="text/javascript">
+!function(e){var t={variable:[{pattern:/\$?\(\([\w\W]+?\)\)/,inside:{variable:[{pattern:/(^\$\(\([\w\W]+)\)\)/,lookbehind:!0},/^\$\(\(/],number:/\b-?(?:0x[\dA-Fa-f]+|\d*\.?\d+(?:[Ee]-?\d+)?)\b/,operator:/--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/,punctuation:/\(\(?|\)\)?|,|;/}},{pattern:/\$\([^)]+\)|`[^`]+`/,inside:{variable:/^\$\(|^`|\)$|`$/}},/\$(?:[a-z0-9_#\?\*!@]+|\{[^}]+\})/i]};e.languages.bash={shebang:{pattern:/^#!\s*\/bin\/bash|^#!\s*\/bin\/sh/,alias:"important"},comment:{pattern:/(^|[^"{\\])#.*/,lookbehind:!0},string:[{pattern:/((?:^|[^<])<<\s*)(?:"|')?(\w+?)(?:"|')?\s*\r?\n(?:[\s\S])*?\r?\n\2/g,lookbehind:!0,inside:t},{pattern:/(["'])(?:\\\\|\\?[^\\])*?\1/g,inside:t}],variable:t.variable,"function":{pattern:/(^|\s|;|\||&)(?:alias|apropos|apt-get|aptitude|aspell|awk|basename|bash|bc|bg|builtin|bzip2|cal|cat|cd|cfdisk|chgrp|chmod|chown|chroot|chkconfig|cksum|clear|cmp|comm|command|cp|cron|crontab|csplit|cut|date|dc|dd|ddrescue|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|enable|env|ethtool|eval|exec|expand|expect|export|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|getopts|git|grep|groupadd|groupdel|groupmod|groups|gzip|hash|head|help|hg|history|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|jobs|join|kill|killall|less|link|ln|locate|logname|logout|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|make|man|mkdir|mkfifo|mkisofs|mknod|more|most|mount|mtools|mtr|mv|mmv|nano|netstat|nice|nl|nohup|notify-send|nslookup|open|op|passwd|paste|pathchk|ping|pkill|popd|pr|printcap|printenv|printf|ps|pushd|pv|pwd|quota|quotacheck|quotactl|ram|rar|rcp|read|readarray|readonly|reboot|rename|renice|remsync|rev|rm|rmdir|rsync|screen|scp|sdiff|sed|seq|service|sftp|shift|shopt|shutdown|sleep|slocate|sort|source|split|ssh|stat|strace|su|sudo|sum|suspend|sync|tail|tar|tee|test|time|timeout|times|touch|top|traceroute|trap|tr|tsort|tty|type|ulimit|umask|umount|unalias|uname|unexpand|uniq|units|unrar|unshar|uptime|useradd|userdel|usermod|users|uuencode|uudecode|v|vdir|vi|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yes|zip)(?=$|\s|;|\||&)/,lookbehind:!0},keyword:{pattern:/(^|\s|;|\||&)(?:let|:|\.|if|then|else|elif|fi|for|break|continue|while|in|case|function|select|do|done|until|echo|exit|return|set|declare)(?=$|\s|;|\||&)/,lookbehind:!0},"boolean":{pattern:/(^|\s|;|\||&)(?:true|false)(?=$|\s|;|\||&)/,lookbehind:!0},operator:/&&?|\|\|?|==?|!=?|<<<?|>>|<=?|>=?|=~/,punctuation:/\$?\(\(?|\)\)?|\.\.|[{}[\];]/};var a=t.variable[1].inside;a["function"]=e.languages.bash["function"],a.keyword=e.languages.bash.keyword,a.boolean=e.languages.bash.boolean,a.operator=e.languages.bash.operator,a.punctuation=e.languages.bash.punctuation}(Prism);
+</script>
+
+<script type="text/javascript">
+Prism.languages.clike={comment:[{pattern:/(^|[^\\])\/\*[\w\W]*?\*\//,lookbehind:!0},{pattern:/(^|[^\\:])\/\/.*/,lookbehind:!0}],string:{pattern:/(["'])(\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,greedy:!0},"class-name":{pattern:/((?:\b(?:class|interface|extends|implements|trait|instanceof|new)\s+)|(?:catch\s+\())[a-z0-9_\.\\]+/i,lookbehind:!0,inside:{punctuation:/(\.|\\)/}},keyword:/\b(if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,"boolean":/\b(true|false)\b/,"function":/[a-z0-9_]+(?=\()/i,number:/\b-?(?:0x[\da-f]+|\d*\.?\d+(?:e[+-]?\d+)?)\b/i,operator:/--?|\+\+?|!=?=?|<=?|>=?|==?=?|&&?|\|\|?|\?|\*|\/|~|\^|%/,punctuation:/[{}[\];(),.:]/};
+</script>
+
+<script type="text/javascript">
+Prism.languages.java=Prism.languages.extend("clike",{keyword:/\b(abstract|continue|for|new|switch|assert|default|goto|package|synchronized|boolean|do|if|private|this|break|double|implements|protected|throw|byte|else|import|public|throws|case|enum|instanceof|return|transient|catch|extends|int|short|try|char|final|interface|static|void|class|finally|long|strictfp|volatile|const|float|native|super|while)\b/,number:/\b0b[01]+\b|\b0x[\da-f]*\.?[\da-fp\-]+\b|\b\d*\.?\d+(?:e[+-]?\d+)?[df]?\b/i,operator:{pattern:/(^|[^.])(?:\+[+=]?|-[-=]?|!=?|<<?=?|>>?>?=?|==?|&[&=]?|\|[|=]?|\*=?|\/=?|%=?|\^=?|[?:~])/m,lookbehind:!0}}),Prism.languages.insertBefore("java","function",{annotation:{alias:"punctuation",pattern:/(^|[^.])@\w+/,lookbehind:!0}});
+</script>
+
+<script type="text/javascript">
+Prism.languages.scala=Prism.languages.extend("java",{keyword:/<-|=>|\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|forSome|if|implicit|import|lazy|match|new|null|object|override|package|private|protected|return|sealed|self|super|this|throw|trait|try|type|val|var|while|with|yield)\b/,string:/"""[\W\w]*?"""|"(?:[^"\\\r\n]|\\.)*"|'(?:[^\\\r\n']|\\.[^\\']*)'/,builtin:/\b(?:String|Int|Long|Short|Byte|Boolean|Double|Float|Char|Any|AnyRef|AnyVal|Unit|Nothing)\b/,number:/\b(?:0x[\da-f]*\.?[\da-f]+|\d*\.?\d+e?\d*[dfl]?)\b/i,symbol:/'[^\d\s\\]\w*/}),delete Prism.languages.scala["class-name"],delete Prism.languages.scala["function"];
+</script>
+
+
+</body>
+
+</html>
