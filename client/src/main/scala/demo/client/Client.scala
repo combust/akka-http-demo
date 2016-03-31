@@ -5,6 +5,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import demo.core.api._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
   * Created by hollinwilkins on 3/28/16.
@@ -14,13 +15,13 @@ trait Client {
   val materializer: Materializer
 
   def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context),
-    (Future[CreateArtistResponse], Context), Any]
+    (Try[CreateArtistResponse], Context), Any]
   def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context),
-    (Future[ReadArtistResponse], Context), Any]
+    (Try[ReadArtistResponse], Context), Any]
   def createSongFlow[Context]: Flow[(CreateSongRequest, Context),
-    (Future[CreateSongResponse], Context), Any]
+    (Try[CreateSongResponse], Context), Any]
   def listSongsFlow[Context]: Flow[(ListSongsRequest, Context),
-    (Future[ListSongsResponse], Context), Any]
+    (Try[ListSongsResponse], Context), Any]
 
   private val defaultCreateArtistFlow = createArtistFlow[Any]
   private val defaultReadArtistFlow = readArtistFlow[Any]
@@ -36,11 +37,12 @@ trait Client {
   def listSongs(request: ListSongsRequest): Future[ListSongsResponse] =
     run(defaultListSongsFlow)(request)
 
-  private def run[Request, Response](flow: Flow[(Request, Any), (Future[Response], Any), Any])
+  private def run[Request, Response](flow: Flow[(Request, Any), (Try[Response], Any), Any])
                                     (request: Request): Future[Response] = {
     Source.single((request, 42))
       .via(flow)
       .runWith(Sink.head)(materializer)
-      .flatMap(_._1)(ec)
+      .map(_._1)
+      .flatMap(Future.fromTry)
   }
 }

@@ -12,7 +12,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.Marshal
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by hollinwilkins on 3/28/16.
@@ -35,7 +35,8 @@ case class HttpClient(uri: Uri)
   val port = uri.authority.port
   val scheme = uri.scheme
 
-  override def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context), (Future[ReadArtistResponse], Context), Any] = {
+  override def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context),
+    (Try[ReadArtistResponse], Context), Any] = {
     val outbound = Flow[(ReadArtistRequest, Context)].map {
       case (request, context) =>
         val httpRequest = HttpRequest(uri = s"/artists/${request.slug}",
@@ -47,7 +48,8 @@ case class HttpClient(uri: Uri)
       .join(flow[Context])
   }
 
-  override def listSongsFlow[Context]: Flow[(ListSongsRequest, Context), (Future[ListSongsResponse], Context), Any] = {
+  override def listSongsFlow[Context]: Flow[(ListSongsRequest, Context),
+    (Try[ListSongsResponse], Context), Any] = {
     val outbound = Flow[(ListSongsRequest, Context)].map {
       case (request, context) =>
         val httpRequest = HttpRequest(uri = s"/artists/${request.artistSlug}/songs",
@@ -60,7 +62,7 @@ case class HttpClient(uri: Uri)
   }
 
   override def createArtistFlow[Context]: Flow[(CreateArtistRequest, Context),
-    (Future[CreateArtistResponse], Context), Any] = {
+    (Try[CreateArtistResponse], Context), Any] = {
     val outbound = Flow[(CreateArtistRequest, Context)].map {
       case (request, context) =>
         Marshal(request.artist).to[MessageEntity].map(entity => (entity, context))
@@ -76,7 +78,8 @@ case class HttpClient(uri: Uri)
       .join(flow[Context])
   }
 
-  override def createSongFlow[Context]: Flow[(CreateSongRequest, Context), (Future[CreateSongResponse], Context), Any] = {
+  override def createSongFlow[Context]: Flow[(CreateSongRequest, Context),
+    (Try[CreateSongResponse], Context), Any] = {
     val outbound = Flow[(CreateSongRequest, Context)].map {
       case (request, context) =>
         Marshal(request.song).to[MessageEntity].map(entity => (request, entity, context))
@@ -104,13 +107,14 @@ case class HttpClient(uri: Uri)
 
   private def inbound[Response, Context]
   (implicit um: FromEntityUnmarshaller[Response]): Flow[(Try[HttpResponse], Context),
-    (Future[Response], Context), Any] = {
+    (Try[Response], Context), Any] = {
     Flow[(Try[HttpResponse], Context)].map {
       case (tryResponse, context) =>
-        val r = Future.fromTry(tryResponse).flatMap {
-          response => Unmarshal(response.entity).to[Response]
+        tryResponse match {
+          case Success(response) =>
+            Unmarshal(response.entity).to[Response].map(response => (Try(response), context))
+          case Failure(error) => Future.fromTry(Failure(error))
         }
-        (r, context)
-    }
+    }.flatMapConcat(Source.fromFuture)
   }
 }
