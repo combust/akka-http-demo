@@ -42,7 +42,7 @@ trait Client {
     Source.single((request, 42))
       .via(flow)
       .runWith(Sink.head)(materializer)
-      .map(_._1)
-      .flatMap(Future.fromTry)
+      .map(_._1)(ec)
+      .flatMap(Future.fromTry)(ec)
   }
 }

@@ -31,9 +31,9 @@ case class HttpClient(uri: Uri)
                      (override implicit val ec: ExecutionContext,
                       override implicit val materializer: Materializer,
                       implicit val system: ActorSystem) extends Client {
-  val hostName = uri.authority.host.address()
-  val port = uri.authority.port
-  val scheme = uri.scheme
+  lazy val hostName = uri.authority.host.address()
+  lazy val port = uri.authority.port
+  lazy val scheme = uri.scheme
 
   override def readArtistFlow[Context]: Flow[(ReadArtistRequest, Context),
     (Try[ReadArtistResponse], Context), Any] = {
